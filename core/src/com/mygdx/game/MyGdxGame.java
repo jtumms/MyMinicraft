@@ -5,25 +5,30 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.Gdx2DPixmap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class MyGdxGame extends ApplicationAdapter {
 	SpriteBatch batch;
 	Texture tiles;
-	TextureRegion down, up, right, left, sprite;
+	TextureRegion down, up, right, left, stand, sprite;
 	float x, y, xVel, yVel;
     String direction;
+    Animation walk;
     float currentSpeed;
+    boolean wasRight;
+    float totalTime;
 
 
 	static final int WIDTH = 16;
 	static final int HEIGHT = 16;
 	static final int DRAW_WIDTH = WIDTH * 4;
 	static final int DRAW_HEGHT = HEIGHT * 4;
-	static final float MAX_VELOCITY = 80;
-    static final float VELOCITY_BOOST = 90;
-	static final float FRICTION = 0.80f;
+	static final float MAX_VELOCITY = 400;
+    static final float VELOCITY_BOOST = 100;
+	static final float FRICTION = 0.90f;
 
 
 
@@ -36,29 +41,42 @@ public class MyGdxGame extends ApplicationAdapter {
 		down = grid[6][0];
 		up = grid[6][1];
 		right = grid[6][3];
+        stand = grid[6][2];
 		left = new TextureRegion(right);
 		left.flip(true, false);
+        walk = new Animation(0.1f, grid[6][2], grid[6][3]);
 
 
-	}
+
+    }
 
 	@Override
 	public void render () {
-        direction = "right";
+        totalTime += Gdx.graphics.getDeltaTime();
 
-		move();
-		Gdx.gl.glClearColor(0.137255f, 0.556863f , 0.137255f, 0.5f);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		batch.begin();
+        direction = "stand";
+
+
+
+        move();
+        wraparound();
+
+        Gdx.gl.glClearColor(0.137255f, 0.556863f, 0.137255f, 0.5f);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        batch.begin();
+
+
+
 		if (direction.equals("right")){
-			sprite = right;
+			sprite = walk.getKeyFrame(totalTime, true);
 			batch.draw(sprite, x, y, DRAW_WIDTH, DRAW_HEGHT);
+
 		}
 		else if (direction.equals("left")){
-            sprite = left;
-            batch.draw(sprite, x, y, DRAW_WIDTH, DRAW_HEGHT);
+            sprite = walk.getKeyFrame(totalTime, true);
+            batch.draw(sprite, x + DRAW_WIDTH, y, DRAW_WIDTH * -1, DRAW_HEGHT);
         }
-        if (direction.equals("up")){
+        else if (direction.equals("up")){
         sprite = up;
         batch.draw(sprite, x, y, DRAW_WIDTH, DRAW_HEGHT);
         }
@@ -66,7 +84,17 @@ public class MyGdxGame extends ApplicationAdapter {
             sprite = down;
             batch.draw(sprite, x, y, DRAW_WIDTH, DRAW_HEGHT);
         }
-		batch.end();
+        else{
+            sprite = stand;
+            if (wasRight){
+                batch.draw(sprite, x, y, DRAW_WIDTH, DRAW_HEGHT);
+            }
+            else if (!wasRight){
+                batch.draw(sprite, x + DRAW_WIDTH, y, DRAW_WIDTH * -1, DRAW_HEGHT);
+            }
+        }
+
+        batch.end();
 	}
 	
 	@Override
@@ -77,7 +105,7 @@ public class MyGdxGame extends ApplicationAdapter {
 
 	public float decelerate(float velocity){
         velocity *= FRICTION;
-        if (Math.abs(velocity) < 60){
+        if (Math.abs(velocity) < 70){
             velocity = 0;
         }
         return velocity;
@@ -96,17 +124,19 @@ public class MyGdxGame extends ApplicationAdapter {
 
 
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            xVel += currentSpeed;
+            xVel = currentSpeed;
             direction = "right";
+            wasRight = true;
 
         } else if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            xVel += currentSpeed * -1;
+            xVel = currentSpeed * -1;
             direction = "left";
+            wasRight = false;
         } else if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-            yVel += currentSpeed;
+            yVel = currentSpeed;
             direction = "up";
         } else if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-            yVel += currentSpeed * -1;
+            yVel = currentSpeed * -1;
             direction = "down";
         }
 
@@ -121,4 +151,20 @@ public class MyGdxGame extends ApplicationAdapter {
 	public void speedBoost(){
             currentSpeed = MAX_VELOCITY + VELOCITY_BOOST;
     }
+    public void wraparound(){
+        if (x > Gdx.graphics.getWidth()){
+            x = 0;
+        }
+        else if(x < 0){
+            x = Gdx.graphics.getWidth();
+        }
+        if (y > Gdx.graphics.getHeight()){
+            y = 0;
+        }
+        else if(y < 0){
+            y = Gdx.graphics.getHeight();
+        }
+
+    }
+
 }
