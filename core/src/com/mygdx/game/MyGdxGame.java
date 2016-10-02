@@ -13,10 +13,10 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 public class MyGdxGame extends ApplicationAdapter {
 	SpriteBatch batch;
 	Texture tiles;
-	TextureRegion down, up, right, left, stand, sprite;
+	TextureRegion down, up, right, left, stand, sprite, upWalk, downWalk;
 	float x, y, xVel, yVel;
     String direction;
-    Animation walk;
+    Animation walk, walkUp, walkDown;
     float currentSpeed;
     boolean wasRight;
     float totalTime;
@@ -27,7 +27,7 @@ public class MyGdxGame extends ApplicationAdapter {
 	static final int DRAW_WIDTH = WIDTH * 4;
 	static final int DRAW_HEGHT = HEIGHT * 4;
 	static final float MAX_VELOCITY = 400;
-    static final float VELOCITY_BOOST = 100;
+    static final float VELOCITY_BOOST = 400;
 	static final float FRICTION = 0.90f;
 
 
@@ -39,12 +39,20 @@ public class MyGdxGame extends ApplicationAdapter {
 		tiles = new Texture("tiles.png");
 		TextureRegion[][] grid = TextureRegion.split(tiles, 16, 16);
 		down = grid[6][0];
+        downWalk = new TextureRegion(down);
+        downWalk.flip(true, false);
 		up = grid[6][1];
 		right = grid[6][3];
         stand = grid[6][2];
 		left = new TextureRegion(right);
 		left.flip(true, false);
         walk = new Animation(0.1f, grid[6][2], grid[6][3]);
+        upWalk = new TextureRegion(up);
+        upWalk.flip(true, false);
+        walkUp = new Animation(0.1f, up, upWalk);
+        walkDown = new Animation(0.1f, down, downWalk);
+
+
 
 
 
@@ -77,11 +85,11 @@ public class MyGdxGame extends ApplicationAdapter {
             batch.draw(sprite, x + DRAW_WIDTH, y, DRAW_WIDTH * -1, DRAW_HEGHT);
         }
         else if (direction.equals("up")){
-        sprite = up;
-        batch.draw(sprite, x, y, DRAW_WIDTH, DRAW_HEGHT);
+            sprite = walkUp.getKeyFrame(totalTime, true);
+            batch.draw(sprite, x, y, DRAW_WIDTH, DRAW_HEGHT);
         }
         else if (direction.equals("down")){
-            sprite = down;
+            sprite = walkDown.getKeyFrame(totalTime, true);
             batch.draw(sprite, x, y, DRAW_WIDTH, DRAW_HEGHT);
         }
         else{
