@@ -21,6 +21,8 @@ public class MyGdxGame extends ApplicationAdapter {
     boolean wasRight;
     float totalTime;
 
+	//adding tree sprite
+
 
 	static final int WIDTH = 16;
 	static final int HEIGHT = 16;
@@ -51,10 +53,6 @@ public class MyGdxGame extends ApplicationAdapter {
         upWalk.flip(true, false);
         walkUp = new Animation(0.1f, up, upWalk);
         walkDown = new Animation(0.1f, down, downWalk);
-
-
-
-
 
     }
 
