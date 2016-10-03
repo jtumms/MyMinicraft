@@ -87,6 +87,8 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 	public void render () {
         Gdx.gl.glClearColor(0.137255f, 0.556863f, 0.137255f, 0.5f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        camera.position.x = x;
+        camera.position.y = y;
         camera.update();
         tiledMapRenderer.setView(camera);
         tiledMapRenderer.render();
@@ -101,7 +103,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 
 
         move();
-        wraparound();
+        //wraparound();
 
 
 
