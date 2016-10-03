@@ -3,25 +3,39 @@ package com.mygdx.game;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Gdx2DPixmap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.Vector3;
 
-public class MyGdxGame extends ApplicationAdapter {
+import java.util.Random;
+
+import static com.badlogic.gdx.math.MathUtils.random;
+
+public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 	SpriteBatch batch;
 	Texture tiles;
-	TextureRegion down, up, right, left, stand, sprite, upWalk, downWalk;
+	TextureRegion down, up, right, left, stand, sprite, upWalk, downWalk, aTree;
 	float x, y, xVel, yVel;
     String direction;
     Animation walk, walkUp, walkDown;
     float currentSpeed;
     boolean wasRight;
     float totalTime;
+    Texture tileImg;
+    TiledMap tiledMap;
+    OrthographicCamera camera;
+    OrthogonalTiledMapRenderer tiledMapRenderer;
 
-	//adding tree sprite
 
 
 	static final int WIDTH = 16;
@@ -48,16 +62,38 @@ public class MyGdxGame extends ApplicationAdapter {
         stand = grid[6][2];
 		left = new TextureRegion(right);
 		left.flip(true, false);
+		aTree = new TextureRegion(tiles, 0, 8, 16, 16 );
         walk = new Animation(0.1f, grid[6][2], grid[6][3]);
         upWalk = new TextureRegion(up);
         upWalk.flip(true, false);
         walkUp = new Animation(0.1f, up, upWalk);
         walkDown = new Animation(0.1f, down, downWalk);
 
+        tileImg = new Texture("image.png");
+        float w = Gdx.graphics.getWidth();
+        float h = Gdx.graphics.getHeight();
+
+        camera = new OrthographicCamera();
+        camera.setToOrtho(false,w,h);
+        camera.update();
+        tiledMap = new TmxMapLoader().load("tileset.tmx");
+        tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
+        Gdx.input.setInputProcessor(this);
+		
+
     }
 
 	@Override
 	public void render () {
+        Gdx.gl.glClearColor(0.137255f, 0.556863f, 0.137255f, 0.5f);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        camera.update();
+        tiledMapRenderer.setView(camera);
+        tiledMapRenderer.render();
+        batch.setProjectionMatrix(camera.combined);
+
+
+
         totalTime += Gdx.graphics.getDeltaTime();
 
         direction = "stand";
@@ -67,10 +103,10 @@ public class MyGdxGame extends ApplicationAdapter {
         move();
         wraparound();
 
-        Gdx.gl.glClearColor(0.137255f, 0.556863f, 0.137255f, 0.5f);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        batch.begin();
 
+
+
+		batch.begin();
 
 
 		if (direction.equals("right")){
@@ -99,6 +135,9 @@ public class MyGdxGame extends ApplicationAdapter {
                 batch.draw(sprite, x + DRAW_WIDTH, y, DRAW_WIDTH * -1, DRAW_HEGHT);
             }
         }
+
+
+
 
         batch.end();
 	}
@@ -172,5 +211,49 @@ public class MyGdxGame extends ApplicationAdapter {
         }
 
     }
+    public int getRandom(){
+		Random rand = new Random();
+		int random =  rand.nextInt((Gdx.graphics.getWidth() - 15) + 1) + 15;
+		return random;
 
+	}
+    @Override public boolean keyDown(int keycode) {
+        return false;
+    }
+
+
+
+
+    @Override
+    public boolean keyUp(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyTyped(char character) {
+        return false;
+    }
+
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        return true;
+    }
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        return false;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        return false;
+    }
+
+    @Override
+    public boolean scrolled(int amount) {
+        return false;
+    }
 }
